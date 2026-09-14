@@ -15,14 +15,28 @@ import (
 	"github.com/yuin/goldmark/renderer/html"
 )
 
+// Version is stamped at build time via:
+//
+//	-ldflags="-s -w -X main.version=v0.1.0"
+var version = "dev"
+
 func main() {
 	// Non-TUI modes: --check verifies plumbing, --smoke runs the full
 	// pipeline headlessly and prints the report to stdout.
 	args := os.Args[1:]
 	switch {
+	case len(args) > 0 && (args[0] == "--version" || args[0] == "-v"):
+		fmt.Printf("spectra %s\n", version)
+		return
 	case len(args) > 0 && args[0] == "--check":
 		if err := runCheck(); err != nil {
 			fmt.Fprintf(os.Stderr, "CHECK FAILED: %v\n", err)
+			os.Exit(1)
+		}
+		return
+	case len(args) > 0 && args[0] == "--update":
+		if err := runSelfUpdate(); err != nil {
+			fmt.Fprintf(os.Stderr, "UPDATE FAILED: %v\n", err)
 			os.Exit(1)
 		}
 		return
@@ -76,6 +90,7 @@ func runCheck() error {
 		return fmt.Errorf("model %s not pulled — run: ollama pull %s", c.Model, c.Model)
 	}
 	fmt.Println("      OK")
+	checkSelfUpdate()
 	fmt.Println("\nAll systems nominal. Launch `spectra` for the TUI.")
 	return nil
 }

@@ -91,10 +91,34 @@ No cloud. No API keys. No telemetry. Your research stays on your hardware.
 
 ## ✦ Install
 
-### Windows
+### One-line install (no Go needed)
+
+**Windows** — PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/NamanGaonkar/SPECTRA/main/install.ps1 | iex
+```
+
+**Linux / macOS** — shell:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/NamanGaonkar/SPECTRA/main/install.sh | bash
+```
+
+Both fetch the latest release from [**Releases**](https://github.com/NamanGaonkar/SPECTRA/releases/latest), **verify the SHA-256 checksum**, install user-locally, and wire up your `PATH`.
+
+Already installed? Update any time:
+
+```bash
+spectra --update          # in-app self-updater (checks GitHub, verifies checksum, swaps binary)
+```
+
+…or just re-run the one-liner — it installs the latest release over the old one.
+
+### Build from source
 
 ```bat
-git clone <your-repo> spectra && cd spectra
+git clone https://github.com/NamanGaonkar/SPECTRA spectra && cd spectra
 go build -trimpath -ldflags="-s -w" -o spectra.exe .
 install.bat
 ```
@@ -108,7 +132,7 @@ spectra
 ### Linux / macOS
 
 ```bash
-git clone <your-repo> spectra && cd spectra
+git clone https://github.com/NamanGaonkar/SPECTRA spectra && cd spectra
 go build -trimpath -ldflags="-s -w" -o spectra .
 ./install.sh          # → ~/.local/bin (checks PATH)
 ```
@@ -149,6 +173,8 @@ All systems nominal. Launch `spectra` for the TUI.
 spectra                          # interactive TUI
 spectra --check                  # 3-point diagnosis, no TUI
 spectra --smoke example.com      # headless one-shot → ./exports/ + stdout report
+spectra --update                 # self-update to the latest release
+spectra --version                # print version
 ```
 
 **Everyday flow:** type URL → `tab` → type research query → `enter` → wait for the three stages → read/scroll → `e` → `m` and/or `p` → `r` for the next run, `q` to leave.

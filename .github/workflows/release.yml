@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Build release binaries
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          LDFLAGS="-s -w -X main.version=${VERSION}"
+          mkdir -p dist
+
+          build() { # goos goarch ext
+            local out="dist/spectra_${VERSION}_${1}_${2}${3}"
+            GOOS="$1" GOARCH="$2" go build -trimpath -ldflags="$LDFLAGS" -o "$out" .
+          }
+
+          build windows amd64 .exe
+          build windows arm64  .exe
+          build linux   amd64  ""
+          build linux   arm64  ""
+          build darwin  amd64  ""
+          build darwin  arm64  ""
+
+          # dmg-style naming for mac builds users expect
+          mv dist/spectra_${VERSION}_darwin_amd64 dist/spectra_${VERSION}_macOS_intel
+          mv dist/spectra_${VERSION}_darwin_arm64 dist/spectra_${VERSION}_macOS_apple-silicon
+
+          cd dist
+          # checksum only the binaries (never the checksum file itself)
+          sha256sum spectra_* > checksums.txt
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*
+          generate_release_notes: true
+          body: |
+            **SPECTRA ${{ github.ref_name }}** — vision-assisted terminal research.
+
+            ### Install
+            1. Download the archive for your platform below (files are plain binaries — no installer needed).
+            2. **Windows:** rename to `spectra.exe` if needed, put it anywhere, then run `install.bat` from the repo (or just add its folder to `PATH`).
+            3. **Linux/macOS:** `chmod +x spectra && ./spectra` (or move to `~/.local/bin`).
+            4. Prerequisites: a Chromium-family browser + [Ollama](https://ollama.com) with `ollama pull minicpm-v4.6:latest`.
+            5. Verify: `spectra --check`
+
+            ### Verify checksums
+            ```
+            sha256sum -c checksums.txt --ignore-missing
+            ```
+
+            ### Requirements
+            - Go **not** required — these are standalone binaries.
+            - Ollama + the vision model must be available locally; nothing leaves your machine.
+
+            **Full changelog:** compare view below.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
