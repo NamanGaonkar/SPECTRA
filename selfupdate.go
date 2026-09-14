@@ -62,24 +62,28 @@ func assetNameFor(tag string) string {
 	return name
 }
 
-// fetchJSON performs a GET and decodes the body as JSON.
-func fetchJSON(url string, out any) error {
-	client := &http.Client{Timeout: 30 * time.Second}
-	resp, err := client.Get(url)
-	if err != nil {
-		return err
+// githubToken returns an optional API token from the environment. With it,
+// `spectra --update` also works while the repo is private (CI, dev machines);
+// without it, everything is anonymous — exactly right for a public repo.
+func githubToken() string {
+	if t := os.Getenv("GH_TOKEN"); t != "" {
+		return t
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("GET %s: HTTP %d", url, resp.StatusCode)
-	}
-	return json.NewDecoder(resp.Body).Decode(out)
+	return os.Getenv("GITHUB_TOKEN")
 }
 
-// fetchDownload retrieves an asset with browser_download_url.
-func fetchDownload(url string) ([]byte, error) {
-	client := &http.Client{Timeout: 5 * time.Minute}
-	resp, err := client.Get(url)
+// httpGet performs a GET with optional token auth and returns the body.
+func httpGet(url string, timeout time.Duration) ([]byte, error) {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", "spectra-selfupdate")
+	if t := githubToken(); t != "" {
+		req.Header.Set("Authorization", "Bearer "+t)
+	}
+	client := &http.Client{Timeout: timeout}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -88,6 +92,20 @@ func fetchDownload(url string) ([]byte, error) {
 		return nil, fmt.Errorf("GET %s: HTTP %d", url, resp.StatusCode)
 	}
 	return io.ReadAll(resp.Body)
+}
+
+// fetchJSON performs a GET and decodes the body as JSON.
+func fetchJSON(url string, out any) error {
+	data, err := httpGet(url, 30*time.Second)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(data, out)
+}
+
+// fetchDownload retrieves an asset with browser_download_url.
+func fetchDownload(url string) ([]byte, error) {
+	return httpGet(url, 5*time.Minute)
 }
 
 // fetchChecksums downloads checksums.txt and returns name→sha256.
