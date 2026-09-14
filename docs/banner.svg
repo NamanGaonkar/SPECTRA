@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="176" viewBox="0 0 1040 176" role="img" aria-label="SPECTRA">
+  <rect width="1040" height="176" rx="18" fill="#0a0a0c"/>
+  <defs>
+    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#86ef8a"/>
+      <stop offset="1" stop-color="#22c55e"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#glow)" fill="url(#ink)">
+    <rect x="28" y="28" width="116" height="20" rx="5"/>
+    <rect x="172" y="28" width="116" height="20" rx="5"/>
+    <rect x="316" y="28" width="116" height="20" rx="5"/>
+    <rect x="460" y="28" width="116" height="20" rx="5"/>
+    <rect x="604" y="28" width="116" height="20" rx="5"/>
+    <rect x="748" y="28" width="92" height="20" rx="5"/>
+    <rect x="892" y="28" width="116" height="20" rx="5"/>
+    <rect x="28" y="52" width="20" height="20" rx="5"/>
+    <rect x="172" y="52" width="20" height="20" rx="5"/>
+    <rect x="268" y="52" width="20" height="20" rx="5"/>
+    <rect x="316" y="52" width="20" height="20" rx="5"/>
+    <rect x="460" y="52" width="20" height="20" rx="5"/>
+    <rect x="652" y="52" width="20" height="20" rx="5"/>
+    <rect x="748" y="52" width="20" height="20" rx="5"/>
+    <rect x="844" y="52" width="20" height="20" rx="5"/>
+    <rect x="892" y="52" width="20" height="20" rx="5"/>
+    <rect x="988" y="52" width="20" height="20" rx="5"/>
+    <rect x="28" y="76" width="116" height="20" rx="5"/>
+    <rect x="172" y="76" width="116" height="20" rx="5"/>
+    <rect x="316" y="76" width="92" height="20" rx="5"/>
+    <rect x="460" y="76" width="20" height="20" rx="5"/>
+    <rect x="652" y="76" width="20" height="20" rx="5"/>
+    <rect x="748" y="76" width="92" height="20" rx="5"/>
+    <rect x="892" y="76" width="116" height="20" rx="5"/>
+    <rect x="124" y="100" width="20" height="20" rx="5"/>
+    <rect x="172" y="100" width="20" height="20" rx="5"/>
+    <rect x="316" y="100" width="20" height="20" rx="5"/>
+    <rect x="460" y="100" width="20" height="20" rx="5"/>
+    <rect x="652" y="100" width="20" height="20" rx="5"/>
+    <rect x="748" y="100" width="20" height="20" rx="5"/>
+    <rect x="820" y="100" width="20" height="20" rx="5"/>
+    <rect x="892" y="100" width="20" height="20" rx="5"/>
+    <rect x="988" y="100" width="20" height="20" rx="5"/>
+    <rect x="28" y="124" width="116" height="20" rx="5"/>
+    <rect x="172" y="124" width="20" height="20" rx="5"/>
+    <rect x="316" y="124" width="116" height="20" rx="5"/>
+    <rect x="460" y="124" width="116" height="20" rx="5"/>
+    <rect x="652" y="124" width="20" height="20" rx="5"/>
+    <rect x="748" y="124" width="20" height="20" rx="5"/>
+    <rect x="844" y="124" width="20" height="20" rx="5"/>
+    <rect x="892" y="124" width="20" height="20" rx="5"/>
+    <rect x="988" y="124" width="20" height="20" rx="5"/>
+  </g>
+</svg>

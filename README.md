@@ -1,13 +1,8 @@
 <div align="center">
 
-<!-- generated wordmark — matches the TUI banner exactly -->
-```
-█████ █████ █████ █████ █████ ████  █████
-█     █   █ █     █       █   █   █ █   █
-█████ █████ ████  █       █   ████  █████
-    █ █     █     █       █   █  █  █   █
-█████ █     █████ █████   █   █   █ █   █
-```
+<p align="center">
+  <img src="docs/banner.svg" alt="SPECTRA" width="640" />
+</p>
 
 <h3><code>vision-assisted terminal research</code></h3>
 
@@ -216,6 +211,7 @@ ollama.go     Ollama REST client — ping · model check · vision generate
 export.go     markdown writer · styled PDF compiler (fpdf + goldmark AST)
 ui_test.go    banner geometry · centering regression tests
 url_test.go   URL normalization regression tests
+docs/         banner.svg — README wordmark (same 5×5 font, green glow)
 ```
 
 <br>
@@ -224,6 +220,7 @@ url_test.go   URL normalization regression tests
 
 - **Palette** — matte dark base `#0a0a0c` · terracotta `#D97757` · ember `#E06C54` · electric cyan `#7aa2f7` · lavender `#bb9af7` · zinc `#3b4261` · mint `#73daca`
 - The wordmark is generated from a 5×5 segmented block font at compile time, so every row is provably equal width (guarded by a unit test)
+- The README banner is a glowing-green SVG render of that same font (`docs/banner.svg`) — GitHub strips color and centering from code blocks, so the wordmark ships as an image; the terminal TUI renders the real ASCII in terracotta
 - The whole UI block is centered with `lipgloss.Place` on both axes — resize the terminal and it re-centers
 - The banner is testable geometry, not hand-drawn art: `go test` fails if the rows ever go ragged
 
