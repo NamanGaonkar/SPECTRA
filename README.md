@@ -185,11 +185,15 @@ spectra --version                # print version
 | `enter` | form | begin research run |
 | `↑ ↓ pgup pgdn` | results | scroll |
 | `e` | results | open export dialog |
-| `m` | export | save Markdown |
-| `p` | export | compile PDF |
-| `r` | export | new research run |
+| `m` / `p` | results **or** export | quick-save Markdown / compile PDF — no detour needed |
+| `m` / `p` | export | save Markdown / compile PDF |
+| `r` | results/export | new research run |
 | `esc` | results/export | go back |
 | `q` / `ctrl+c` | anywhere | quit |
+
+All letter shortcuts are **Caps Lock-proof**: `M`, `P`, `E`, `R`, `Q` fire identically (the key is lowercased before matching — standard terminal-app behavior).
+
+Save confirmation appears under the results box: `✓ saved exports\spectra_…pdf` — errors show there too, so a failed export is never silent.
 
 **Pasting URLs:** go ahead — paste straight from the browser bar. SPECTRA normalizes everything: surrounding quotes/brackets, stray whitespace and zero-width characters, trailing punctuation, `#fragments`, and common tracking params (`utm_*`, `fbclid`, `gclid`, …) are stripped; `https://` is added if missing; the URL is validated before Chrome ever launches.
 

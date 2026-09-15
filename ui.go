@@ -152,7 +152,7 @@ func (m model) viewResults() string {
 
 	box := styleResultBox.Render(m.viewport.View())
 	hints := centerLine(
-		styleHelp.Render("[e] export   [↑/↓/pgup/pgdn] scroll   [esc] back   [q] quit"),
+		styleHelp.Render("[e] export dialog   [m] quick-save .md   [p] quick-save .pdf   [↑/↓] scroll   [esc] back   [q] quit"),
 		resultWidth+2,
 	)
 
@@ -161,18 +161,29 @@ func (m model) viewResults() string {
 		"",
 		centerLine(styleMeta.Render(meta), resultWidth+2),
 		box,
-		hints,
 	)
+
+	// Save/export feedback ("✓ saved exports\\…") renders here so quick-key
+	// exports from this view are confirmed on screen.
+	if m.stepNote != "" {
+		body = lipgloss.JoinVertical(lipgloss.Center,
+			body,
+			"",
+			centerLine(m.stepNote, resultWidth+2),
+		)
+	}
+
+	body = lipgloss.JoinVertical(lipgloss.Center, body, "", hints)
 	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, body)
 }
 
 // viewExport — View 4: export quick-keys card.
 func (m model) viewExport() string {
 	menu := styleCard.Render(lipgloss.JoinVertical(lipgloss.Left,
-		styleExportKey.Render("m")+"   Save Markdown (.md)      → ./exports/",
-		styleExportKey.Render("p")+"   Compile to PDF (.pdf)    → ./exports/",
-		styleExportKey.Render("r")+"   New Research Run",
-		styleExportKey.Render("q")+"   Quit",
+		styleExportKey.Render("m / M")+"  Save Markdown (.md)      → ./exports/",
+		styleExportKey.Render("p / P")+"  Compile to PDF (.pdf)    → ./exports/",
+		styleExportKey.Render("r / R")+"  New Research Run",
+		styleExportKey.Render("q / Q")+"  Quit",
 	))
 
 	body := lipgloss.JoinVertical(lipgloss.Center,

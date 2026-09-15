@@ -283,7 +283,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Batch(cmds...)
 		}
 
-		switch msg.String() {
+		// Compare lowercase: with Caps Lock on, msg.String() reports "M",
+		// "P", "E"… and every shortcut below would silently miss. (Shift
+		// intentionally does NOT trigger shortcuts — shift+m types a literal
+		// "M" into inputs, matching standard terminal-app behavior.)
+		key := strings.ToLower(msg.String())
+
+		switch key {
 		case "ctrl+c":
 			return m, tea.Quit
 
@@ -314,31 +320,33 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.stepNote = ""
 			}
 
-		// ---- View 4: export dialog ---------------------------------------
+		// ---- Export actions (View 4, and quick-keys on View 3) ------------
+		// m/p work from BOTH the export dialog and the results view — no
+		// detour through the dialog required.
 		case "m":
-			if m.state == viewExport && m.resultErr == nil {
-				m.state = viewResults // dialog acts, then returns to results
+			if (m.state == viewExport || m.state == viewResults) && m.resultErr == nil {
 				path, err := WriteMarkdown(m.result)
 				if err != nil {
-					m.stepNote = errStyle(err.Error())
+					m.stepNote = errStyle("markdown save failed: " + err.Error())
 				} else {
 					m.stepNote = okStyle("saved " + path)
 				}
+				m.state = viewResults // dialog acts, then returns to results
 			}
 
 		case "p":
-			if m.state == viewExport && m.resultErr == nil {
-				m.state = viewResults
+			if (m.state == viewExport || m.state == viewResults) && m.resultErr == nil {
 				path, err := WritePDF(m.result)
 				if err != nil {
-					m.stepNote = errStyle(err.Error())
+					m.stepNote = errStyle("pdf export failed: " + err.Error())
 				} else {
 					m.stepNote = okStyle("saved " + path)
 				}
+				m.state = viewResults
 			}
 
 		case "r":
-			if m.state == viewExport {
+			if m.state == viewExport || m.state == viewResults {
 				return m, m.resetForNewRun()
 			}
 
