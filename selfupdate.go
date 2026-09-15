@@ -34,6 +34,7 @@ const (
 
 // releaseAsset is the subset of GitHub's release JSON we care about.
 type releaseAsset struct {
+	ID   int64  `json:"id"`
 	Name string `json:"name"`
 	URL  string `json:"browser_download_url"`
 	Size int64  `json:"size"`
@@ -72,13 +73,17 @@ func githubToken() string {
 	return os.Getenv("GITHUB_TOKEN")
 }
 
-// httpGet performs a GET with optional token auth and returns the body.
-func httpGet(url string, timeout time.Duration) ([]byte, error) {
+// httpGetWithAccept performs a GET with optional token auth and a custom
+// Accept header, returning the body.
+func httpGetWithAccept(url, accept string, timeout time.Duration) ([]byte, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("User-Agent", "spectra-selfupdate")
+	if accept != "" {
+		req.Header.Set("Accept", accept)
+	}
 	if t := githubToken(); t != "" {
 		req.Header.Set("Authorization", "Bearer "+t)
 	}
@@ -92,6 +97,11 @@ func httpGet(url string, timeout time.Duration) ([]byte, error) {
 		return nil, fmt.Errorf("GET %s: HTTP %d", url, resp.StatusCode)
 	}
 	return io.ReadAll(resp.Body)
+}
+
+// httpGet performs a GET with optional token auth and returns the body.
+func httpGet(url string, timeout time.Duration) ([]byte, error) {
+	return httpGetWithAccept(url, "", timeout)
 }
 
 // fetchJSON performs a GET and decodes the body as JSON.
@@ -108,10 +118,33 @@ func fetchDownload(url string) ([]byte, error) {
 	return httpGet(url, 5*time.Minute)
 }
 
-// fetchChecksums downloads checksums.txt and returns name→sha256.
-func fetchChecksums(tag string) (map[string]string, error) {
-	raw, err := fetchDownload(fmt.Sprintf(
-		"%s/%s/releases/download/%s/checksums.txt", githubAPIBase, githubRepo, tag))
+// fetchAsset downloads a release asset's bytes. With a token (private
+// repos), assets must go through the API with Accept: octet-stream — the
+// github.com browser_download_url 404s for anonymous-less private access.
+// Without a token (public repos), the plain download URL works everywhere.
+func fetchAsset(a *releaseAsset) ([]byte, error) {
+	if githubToken() != "" && a.ID != 0 {
+		return httpGetWithAccept(
+			fmt.Sprintf("%s/repos/%s/releases/assets/%d", githubAPIBase, githubRepo, a.ID),
+			"application/octet-stream", 5*time.Minute)
+	}
+	return fetchDownload(a.URL)
+}
+
+// fetchChecksums downloads the release's checksums.txt (via the asset API
+// when authenticated) and returns name→sha256.
+func fetchChecksums(rel *releaseInfo) (map[string]string, error) {
+	var asset *releaseAsset
+	for i := range rel.Assets {
+		if rel.Assets[i].Name == "checksums.txt" {
+			asset = &rel.Assets[i]
+			break
+		}
+	}
+	if asset == nil {
+		return nil, fmt.Errorf("release %s has no checksums.txt asset", rel.TagName)
+	}
+	raw, err := fetchAsset(asset)
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +296,7 @@ func runSelfUpdate() error {
 	}
 
 	fmt.Printf("▸ verifying checksums for %s…\n", asset.Name)
-	sums, err := fetchChecksums(rel.TagName)
+	sums, err := fetchChecksums(rel)
 	if err != nil {
 		return fmt.Errorf("could not download checksums.txt: %w", err)
 	}
@@ -273,7 +306,7 @@ func runSelfUpdate() error {
 	}
 
 	fmt.Printf("▸ downloading %s (%.1f MB)…\n", asset.Name, float64(asset.Size)/1e6)
-	raw, err := fetchDownload(asset.URL)
+	raw, err := fetchAsset(asset)
 	if err != nil {
 		return err
 	}
